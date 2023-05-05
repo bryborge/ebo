@@ -1,6 +1,6 @@
 # Ebo
 
-## About the Project
+## 🚀 About the Project
 
 The [Easy-Bake Oven](https://en.wikipedia.org/wiki/Easy-Bake_Oven) is a toy that was first introduced to the market in
 1964. I didn't actually know that until I started thinking about what to name this project. But it seems so fitting,
@@ -18,7 +18,7 @@ satisfying all the same.
     >
     > -- Hashicorp ([Source article](https://learn.hashicorp.com/tutorials/packer/golden-image-with-hcp-packer))
 
-## Versioning
+## 💽 Versioning
 
 Golden images in this project use Semantic Versioning ([SemVer](https://semver.org/)). Versions are defined in a file
 called `version.pkrvars.hcl` located at each OS distro's base directory.
@@ -29,7 +29,7 @@ called `version.pkrvars.hcl` located at each OS distro's base directory.
 *   [Packer](https://www.packer.io/) - Identical machine images for multiple platforms from a single source 
     configuration.
 
-## Useful Commands
+## 💻 Useful Commands
 
 *   Validate all Ubuntu builds.
 
@@ -69,6 +69,10 @@ called `version.pkrvars.hcl` located at each OS distro's base directory.
     aws ssm get-parameters --names \
       /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
     ```
+
+## ⭐ License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
 ## 📚 Further Reading
 
