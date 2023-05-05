@@ -1,0 +1,47 @@
+---
+- name: Setup Dotfiles Playbook
+  hosts: all
+  become: yes
+  vars:
+    github_raw_url: https://raw.githubusercontent.com/sonofborge/dotfiles/main
+    user_name: xsob
+  tasks:
+    - name: bash_aliases
+      ansible.builtin.get_url:
+        url: "{{ github_raw_url }}/.bash_aliases"
+        dest: "/home/{{ user_name }}/.bash_aliases"
+
+    - name: bashrc
+      ansible.builtin.get_url:
+        url: "{{ github_raw_url }}/.bashrc"
+        dest: "/home/{{ user_name }}/.bashrc"
+
+    - name: gitcompletion
+      ansible.builtin.get_url:
+        url: "{{ github_raw_url }}/.gitcompletion"
+        dest: "/home/{{ user_name }}/.gitcompletion"
+
+    - name: gitconfig
+      ansible.builtin.get_url:
+        url: "{{ github_raw_url }}/.gitconfig"
+        dest: "/home/{{ user_name }}/.gitconfig"
+
+    - name: gitprompt
+      ansible.builtin.get_url:
+        url: "{{ github_raw_url }}/.gitprompt"
+        dest: "/home/{{ user_name }}/.gitprompt"
+
+    - name: vimrc
+      ansible.builtin.get_url:
+        url: "{{ github_raw_url }}/.vimrc"
+        dest: "/home/{{ user_name }}/.vimrc"
+
+    - name: create vim colors directory
+      file:
+        path: "/home/{{ user_name }}/.vim/colors"
+        state: directory
+
+    - name: vim theme (monokai)
+      ansible.builtin.get_url:
+        url: "{{ github_raw_url }}/.vim/colors/monokai.vim"
+        dest: "/home/{{ user_name }}/.vim/colors/monokai.vim"

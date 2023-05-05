@@ -1,0 +1,35 @@
+---
+- name: Manage Apt Packages Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt repository cache
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade all apt packages
+      apt:
+        upgrade: dist
+        force_apt_get: yes
+
+    - name: Install system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - fd-find
+          - gnupg
+          - jq
+          - lsb-release
+          - neofetch
+          - nfs-common
+          - ripgrep
+          - software-properties-common
+          - python3-pip
+          - python3-setuptools
+          - virtualenv
+        state: latest
+        update_cache: yes

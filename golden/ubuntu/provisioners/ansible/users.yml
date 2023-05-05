@@ -1,0 +1,41 @@
+---
+- name: Manage Users Playbook
+  hosts: all
+  become: yes
+  vars:
+    user_name: xsob
+  tasks:
+    - name: Make sure we have a 'wheel' group
+      group:
+        name: wheel
+        state: present
+
+    - name: Allow 'wheel' group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Create "{{ user_name }}" user
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        password: "{{ user_password | password_hash('sha512', user_salt) }}"
+        state: present
+        shell: /bin/bash
+
+    - name: Add sudoers users to wheel group
+      user:
+        name: "{{ user_name }}"
+        groups: wheel
+        append: yes
+        state: present
+        createhome: yes
+
+    - name: Lock/Disable ubuntu user
+      ansible.builtin.user:
+        name: ubuntu
+        state: present
+        password_lock: yes
+        shell: "/sbin/nologin"
