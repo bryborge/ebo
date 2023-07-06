@@ -1,18 +1,18 @@
 ---
 - name: Manage Apt Packages Playbook
   hosts: all
-  become: yes
+  become: true
   tasks:
     - name: Update apt repository cache
       apt:
-        update_cache: yes
-        force_apt_get: yes
+        update_cache: true
+        force_apt_get: true
         cache_valid_time: 3600
 
     - name: Upgrade all apt packages
       apt:
         upgrade: dist
-        force_apt_get: yes
+        force_apt_get: true
 
     - name: Install system packages
       apt:
@@ -32,4 +32,4 @@
           - python3-setuptools
           - virtualenv
         state: latest
-        update_cache: yes
+        update_cache: true
