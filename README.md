@@ -1,4 +1,4 @@
-# Ebo
+# Easy Bake Oven (EBO)
 
 ## 🚀 About the Project
 

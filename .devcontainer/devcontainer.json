@@ -1,0 +1,35 @@
+{
+  "name": "EBO",
+  "dockerFile": "Dockerfile",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "shardulm94.trailing-spaces",
+        "IBM.output-colorizer",
+        "golang.go",
+        "EditorConfig.EditorConfig",
+        "nhoizey.gremlins",
+        "hashicorp.hcl",
+        "ms-vscode.makefile-tools",
+        "github.vscode-github-actions"
+      ],
+      "settings": {
+        "go.useLanguageServer": true
+      }
+    }
+  },
+  "runArgs": [
+      "--privileged",
+      "--security-opt",
+      "seccomp=unconfined",
+      // map SSH keys for Git
+      "-v", "${env:HOME}/.ssh:/home/vscode/.ssh:ro",
+      "-v", "/dev:/dev",
+      "-v", ".:/build"
+  ],
+  "postStartCommand": {
+    "git_safe": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+    "entrypoint": "bash ${containerWorkspaceFolder}/.devcontainer/entrypoint.sh"
+  }
+}
