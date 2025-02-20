@@ -15,31 +15,53 @@ for arg in "$@"; do
     fi
 done
 
-echo "Starting Raspberry Pi OS image build process..."
-
-# Check for expected first argument.
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <operating-system>"
-    echo "Valid operating-systems: raspios"
+# Check for expected arguments.
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <architecture> <operating-system>"
+    echo "Valid architectures: arm64, armhf"
+    echo "Valid operating systems: raspios"
     exit 1
 fi
 
-# Select the operating system to build (based on the first argument).
+# Set architecture-specific variables based on first argument.
 case $1 in
-    "raspios")
-        source ./scripts/raspios/build.sh
+    "arm64")
+        QEMU_ARCH="aarch64"
+        QEMU_BINARY="qemu-aarch64-static"
+        BINFMT_MAGIC="\x7f\x45\x4c\x46\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7\x00"
+        BINFMT_MASK="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff"
+        ;;
+    "armhf")
+        QEMU_ARCH="arm"
+        QEMU_BINARY="qemu-arm-static"
+        BINFMT_MAGIC="\x7f\x45\x4c\x46\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00"
+        BINFMT_MASK="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff"
         ;;
     *)
-        echo "Invalid operating system choice: $1"
-        echo "Valid options are: raspios"
+        echo "Invalid architecture choice: $1"
+        echo "Valid architectures: arm64, armhf"
+        exit 1
+        ;;
+esac
+
+# Select the operating system to build based on the second argument.
+case $2 in
+    "raspios")
+        source ./src/$2/arch/$1.sh
+        ;;
+    *)
+        echo "Invalid operating system choice: $2"
+        echo "Valid operating systems: raspios"
         exit 1
         ;;
 esac
 
 # Directories
-export BASE_IMAGE_DIR="img"
-export MOUNT_DIR="mnt"
-export OUTPUT_DIR="out"
+BASE_IMAGE_DIR="img"
+MOUNT_DIR="mnt"
+OUTPUT_DIR="out"
+
+echo "Setting the oven to 375-degrees fahrenheit...🔥"
 
 # Download the base image if not already present.
 if [ ! -f "$BASE_IMAGE_DIR/$IMAGE" ];
@@ -66,14 +88,15 @@ else
 fi
 
 # Ensure binfmt support for ARM emulation is setup.
-if [ ! sudo update-binfmts --display qemu-arm 2>/dev/null ]; then
-    echo "Registering qemu-arm format..."
+echo "Registering $QEMU_ARCH format..."
+if ! sudo update-binfmts --display "$QEMU_ARCH" 2>/dev/null;
+then
     sudo update-binfmts \
-        --install qemu-arm /usr/bin/qemu-arm-static \
-        --magic "\x7f\x45\x4c\x46\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00" \
-        --mask "\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff"
+        --install "$QEMU_ARCH" "/usr/bin/$QEMU_BINARY" \
+        --magic "$BINFMT_MAGIC" \
+        --mask "$BINFMT_MASK"
 else
-    echo "qemu-arm format already registered."
+    echo "$QEMU_ARCH format already registered."
 fi
 
 # Mount the image partitions.
@@ -103,16 +126,16 @@ else
     sudo mount -o bind /dev/pts "$MOUNT_DIR/dev/pts"    
 fi
 
-sudo cp scripts/$OS/provision.sh "$MOUNT_DIR/tmp/"
-sudo chmod +x "$MOUNT_DIR/tmp/provision.sh"
+sudo cp src/$OS/provisioner.sh "$MOUNT_DIR/tmp/"
+sudo chmod +x "$MOUNT_DIR/tmp/provisioner.sh"
 
 # Run the provisioning script in chroot
-echo "Running provisioning in chroot..."
-sudo chroot "$MOUNT_DIR" /bin/bash -c "/tmp/provision.sh"
+echo "Running provisioning script in chroot..."
+sudo chroot "$MOUNT_DIR" /bin/bash -c "/tmp/provisioner.sh"
 
 # Clean up
 echo "Cleaning up..."
-sudo rm "$MOUNT_DIR/tmp/provision.sh"
+sudo rm "$MOUNT_DIR/tmp/provisioner.sh"
 sudo rm "$MOUNT_DIR/usr/bin/qemu-arm-static"
 
 sudo umount "$MOUNT_DIR/dev/pts"
